@@ -1,7 +1,7 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'northamerica-northeast1-docker.pkg.dev/sr-stock-ycng-228/ycng228/ycng_image_predictor', '.' ]
-images: ['northamerica-northeast1-docker.pkg.dev/sr-stock-ycng-228/ycng228/ycng_image_predictor']
+  args: [ 'build', '-t', 'northamerica-northeast1-docker.pkg.dev/stock-363101/ycng228/ycng_image_predictor', '.' ]
+images: ['northamerica-northeast1-docker.pkg.dev/stock-363101/ycng228/ycng_image_predictor']
 #options:
 #  pool:
 #    name: 'projects/stock-ycng-228/locations/us-east1/workerPools/mypool'
