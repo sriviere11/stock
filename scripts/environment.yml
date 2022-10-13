@@ -2,19 +2,19 @@ name: stock
 
 dependencies:
   - pip=22.2.2
-<<<<<<< HEAD
+#<<<<<<< HEAD
   - python=3.8.5
-=======
+#=======
   - python==3.8.5
->>>>>>> f5d3817 (yml change)
+#>>>>>>> f5d3817 (yml change)
 
   - pip:
       - matplotlib
       - pandas
-<<<<<<< HEAD
+#<<<<<<< HEAD
       - flask
-=======
->>>>>>> f5d3817 (yml change)
+#=======
+#>>>>>>> f5d3817 (yml change)
       - requests
       - scikit-learn
       - joblib
@@ -24,10 +24,10 @@ dependencies:
       - google-api-python-client
       - google-auth
       - google-auth-httplib2
-<<<<<<< HEAD
+#<<<<<<< HEAD
       - GitPython
 
-=======
+#=======
       - GitPython #optional but required in my new version of the app
->>>>>>> f5d3817 (yml change)
+#>>>>>>> f5d3817 (yml change)
 
