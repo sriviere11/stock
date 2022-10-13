@@ -1,6 +1,6 @@
 # get project-ID:
 #gcloud config get-value project
-PROJECT_ID='sr-stock-ycng-228'
+PROJECT_ID='stock-363101'
 ### build docker and push into GCP
 gcloud builds submit --tag gcr.io/${PROJECT_ID}/stockpredictor
 
