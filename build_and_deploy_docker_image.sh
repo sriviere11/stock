@@ -1,4 +1,4 @@
-# get project-ID:
+# get project-ID2:
 #gcloud config get-value project
 PROJECT_ID='stock-363101'
 ### build docker and push into GCP
