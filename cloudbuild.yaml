@@ -5,4 +5,4 @@ images: ['northamerica-northeast1-docker.pkg.dev/sr-stock-ycng-228/ycng228/ycng_
 #options:
 #  pool:
 #    name: 'projects/stock-ycng-228/locations/us-east1/workerPools/mypool'
-timeout: '1200s'
+timeout: '2400s'
