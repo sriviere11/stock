@@ -482,7 +482,7 @@ def hello():
 @app.route('/ticker/<ticker>', methods=['GET'])
 def ticker(ticker):
 
-    prediction = predict_ticker(['AAPL'])
+    prediction = "predict_ticker(['AAPL'])"
 
 
     return f'{prediction}\n'
