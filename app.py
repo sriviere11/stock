@@ -79,7 +79,7 @@ from yahoo_fin import stock_info as si
 from yahoo_fin import *
 import pandas as pd
 import pandas
-import seaborn as sns
+#import seaborn as sns
 import numpy as np
 
 #import bamboolib as bam
@@ -482,7 +482,7 @@ def hello():
 @app.route('/ticker/<ticker>', methods=['GET'])
 def ticker(ticker):
 
-    prediction = "predict_ticker(['AAPL'])"
+    prediction = predict_ticker(['AAPL'])
 
 
     return f'{prediction}\n'
