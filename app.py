@@ -79,7 +79,7 @@ from yahoo_fin import stock_info as si
 from yahoo_fin import *
 import pandas as pd
 import pandas
-#import seaborn as sns
+import seaborn as sns
 import numpy as np
 
 #import bamboolib as bam
@@ -370,7 +370,7 @@ def add_buy_sell_to_prediction(predictions):
 
 def predict_ticker(ticker_list_for_models):
 
-
+    ticker_list_for_models=ticker_list_for_models.split('-')
 
 
     #print(f"Example long_test: {long_test}")
@@ -482,10 +482,11 @@ def hello():
 @app.route('/ticker/<ticker>', methods=['GET'])
 def ticker(ticker):
 
-    prediction = predict_ticker(['AAPL'])
+    DF_accuracy,predictions,resultat=predict_ticker(ticker)
 
 
-    return f'{prediction}\n'
+    #return f'{prediction}\n'
+    return f"Prediction for  -- ticker: {ticker} -->{resultat.iloc[-1]['y_pred']}\n"
 
 
 
@@ -494,4 +495,3 @@ if __name__ == '__main__':
     # Used when running locally only. When deploying to Cloud Run,
     # a webserver process such as Gunicorn will serve the app.
     app.run(host='localhost', port=8080, debug=True)
-
