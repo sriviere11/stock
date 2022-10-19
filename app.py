@@ -449,7 +449,7 @@ def predict_ticker(ticker_list_for_models):
 
 
 
-    #provide a data frame of the accuracies
+    #provide a data frame  of the accuracies
     accuracy=[]
     for ticker in ticker_list_for_models:
         accuracy.append([balanced_accuracy(ticker,predictions),ticker])
