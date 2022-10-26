@@ -1,3 +1,4 @@
+
 #from VBTT_IO.IO import *
 #from VBTT_SP500.SP500 import *
 #from VBTT_Features.Features import *
@@ -252,7 +253,8 @@ def initialize_data(days, lags, nb_predict_days):
 
 
     # define main date in models for defining training and test sets dates.
-    yesterday = datetime.now() - timedelta(1)
+    #yesterday = datetime.now() - timedelta(1)
+    yesterday=datetime.now()
     start_date = yesterday - timedelta(days=days)
     train_date_start = start_date.strftime("%Y-%m-%d")
     train_date_last = yesterday - timedelta(days=nb_predict_days + 1)  # nombre de jours a predire
@@ -364,13 +366,22 @@ def add_buy_sell_to_prediction(predictions):
     df_lagged = df_lagged.dropna()
     df_lagged['y_testb'] = np.floor(df_lagged['y_test'] / df_lagged['y_test_lag1']).astype(int)
     df_lagged['y_predb'] = np.floor(df_lagged['y_pred'] / df_lagged['y_pred_lag1']).astype(int)
+    
+    #*** using map function to decide buy or sell
+    category={1:"Buy",0:"Sell"}
+    df_lagged['y_recommend'] =df_lagged['y_predb'].map(category)
     return df_lagged
 
 
 
 def predict_ticker(ticker_list_for_models):
-
+    
+    
     ticker_list_for_models=ticker_list_for_models.split('-')
+    #note when we use flask we will use /ticker/aapl-nflx-cdw
+    #so we need to split
+
+
 
 
     #print(f"Example long_test: {long_test}")
@@ -387,7 +398,7 @@ def predict_ticker(ticker_list_for_models):
 
     nb_predict_days=30   #size of test data in number of days
 
-
+    
 
     # if we don't have model for a ticker in list, retrain model and save
     retrain_model = False
@@ -407,18 +418,18 @@ def predict_ticker(ticker_list_for_models):
 
 
     yesterday, start_date,train_date_start,train_date_last,test_date_start,test_date_last, days=initialize_data(lags*2,lags,nb_predict_days)
-
+    
 
     ### validation if we have everything
-    #print(f"Input ->years {years}")
-    #print(f"Input ->ticker list {ticker_list_for_models}")
-    #print(f"Input->lags {lags}")
-    #print(f"Input ->predict days {nb_predict_days}")
-    #print(f"Period->yesterday {yesterday}")
-    #print(f"period->train_date_start {train_date_start}")
-    #print(f"Period->train_date_last {train_date_last}")
-    #print(f"Period->test_date_start {test_date_start}")
-    #print(f"Period->test_date_last {test_date_last}")
+    print(f"Input ->years {years}")
+    print(f"Input ->ticker list {ticker_list_for_models}")
+    print(f"Input->lags {lags}")
+    print(f"Input ->predict days {nb_predict_days}")
+    print(f"Period->yesterday {yesterday}")
+    print(f"period->train_date_start {train_date_start}")
+    print(f"Period->train_date_last {train_date_last}")
+    print(f"Period->test_date_start {test_date_start}")
+    print(f"Period->test_date_last {test_date_last}")
 
     #print(f"This is the tickers for our model {ticker_list_for_models}")
     #print(f"This is the additional data  we add to the tickers for the model {additional_data}")
@@ -427,7 +438,7 @@ def predict_ticker(ticker_list_for_models):
     df_tomorrow.shape
 
     # to store predictions
-    predictions = pd.DataFrame()
+    Predictions = pd.DataFrame()
 
     for ticker in ticker_list_for_models:
         # load the saved model for the ticker
@@ -437,34 +448,93 @@ def predict_ticker(ticker_list_for_models):
         X_test, y_test, df_filtered = create_predict_set(ticker, df_tomorrow, lags, nb_predict_days,additional_data)  # this is X and
         temp_pred = model_predict(loaded_model, ticker, X_test, y_test)
 
-        predictions = predictions.append(temp_pred, ignore_index=True)  # this is to store in the master pandas list
+        
+         #===
+        temp_pred.drop(labels=[0], inplace=True)
 
+
+        import datetime
+        from datetime import timedelta
+
+        df_filtered2=pd.DataFrame(df_filtered[ticker])
+
+        df_filtered2 = df_filtered2.reset_index()
+
+    
+        # Deleted 1 row in df_filtered2
+        df_filtered2.drop(labels=[0], inplace=True)
+      
+
+        # Renamed columns Date
+        df_filtered2.rename(columns={'index': 'Date'}, inplace=True)
+
+        df_filtered2['Predicted for']=df_filtered2['Date']+timedelta(days=1)
+        #df_filtered2['Prediction for']=df_filtered2['Date']
+        df_filtered2=df_filtered2[['Date','Predicted for']]
+
+        # Step: Copy a dataframe column
+
+
+        temp_pred2=pd.concat([temp_pred,df_filtered2],axis=1)
+     
+    #===
+        
+        Predictions = Predictions.append(temp_pred2, ignore_index=True)  # this is to store in the master pandas list
+
+        #print(f"temp_pred: \n{temp_pred}")
+        #print(f"temp_pred2: \n{temp_pred2}")
+        #print(f"temp_pred2: \n{temp_pred2}")
+        #print(f"df_filtered2: \n{df_filtered2}")
+    
+        #print(f"Predictions:\n {Predictions}")
+        
+        
     #adding binary buy or sell to predictions dataframe
-    predictions=add_buy_sell_to_prediction(predictions)
+    Predictions=add_buy_sell_to_prediction(Predictions)
 
 
     ticker="*all*"
-    accuracy=balanced_accuracy(ticker,predictions)
+    accuracy=balanced_accuracy(ticker,Predictions)
     print(f"Accuracy score for {ticker} is {accuracy}.")
 
 
 
-    #provide a data frame  of the accuracies
-    accuracy=[]
+    #provide a data frame of the accuracies
+    
+    DF_Recommendations=[]
     for ticker in ticker_list_for_models:
-        accuracy.append([balanced_accuracy(ticker,predictions),ticker])
-        DF_accuracy=pd.DataFrame(accuracy, columns=["Blc accuracy", "Ticker"])
-
-
-    #predict
-    DF_accuracy
-    predictions
-    resultat=predictions[['y_test','y_pred','ticker','y_predb']][predictions['ticker']==ticker]
+        DF_Recommendations.append([ticker,"","","",balanced_accuracy(ticker,Predictions)])
+        Recommendations=pd.DataFrame(DF_Recommendations, columns=["Ticker",'Predicted for','Predicted',"Recommended","Accuracy"])
+    
+     
+    #********************************************************
+    # suggestion - DF_accuracy change to DF_accuracy_recommendation 
+    # suggestion - resultat change as follow: Date, Observed Value, Date Prediction, Predicted Value,Recommendation
+    # suggestion - now date observed value should be change to NA
+    #********************************************************
+ 
+    
     for ticker in ticker_list_for_models:
-        resultat = predictions[['y_test', 'y_pred', 'ticker', 'y_predb']][predictions['ticker'] == ticker]
-        print(f"Prediction for {yesterday + timedelta(1)} -- ticker: {ticker} {'**resultat**'}\n")
-        # print(f"Prediction for {yesterday+timedelta(1)} -- ticker: {ticker} {'**resultat**'}\n {resultat.tail()} \n\n")
-    return DF_accuracy,predictions,resultat
+        #results = Predictions[['y_test', 'y_pred', 'ticker', 'y_predb','y_recommend']][Predictions['ticker'] == ticker]
+        
+      
+        results = Predictions[['y_test', 'y_pred', 'ticker', 'y_predb','y_recommend']][Predictions['ticker'] == ticker]
+        #date_predict=yesterday + timedelta(1)
+        date_predict=yesterday
+        date_predict=date_predict.strftime("%Y/%m/%d")
+        ticker_predicted=results.iloc[-1]['y_pred']  #this is the last row containing result
+        ticker_recommend=results.iloc[-1]['y_recommend']  #this is the last row containing result
+        Recommendations.loc[Recommendations['Ticker']==ticker,'Predicted for']=date_predict #to change content of a cell
+        Recommendations.loc[Recommendations['Ticker']==ticker,'Predicted']=ticker_predicted
+        Recommendations.loc[Recommendations['Ticker']==ticker,'Recommended']=ticker_recommend
+        
+        # print(f"Prediction for {yesterday+timedelta(1)} -- ticker: {ticker} {'**resultat**'}\n {resultat.tail()}\n\n")
+    
+    Results=Predictions[['ticker','Date','y_test','Predicted for','y_pred','y_recommend']]
+    Results=Results.rename(columns={'ticker':'Ticker','y_test':'Observed','y_pred':'Predicted','y_recommend':'Recommended'})
+    
+    return Results, Recommendations
+
 
 
 ###########################################
@@ -481,12 +551,32 @@ def hello():
 
 @app.route('/ticker/<ticker>', methods=['GET'])
 def ticker(ticker):
+    ticker = ticker.upper()
+    filename_json="SP500.json"
+    file_exists = os.path.exists("SP500.json")
+    if file_exists:
+        SP500_list = read_list(filename_json)
+        SP500_list = np.array(SP500_list)  # we need an array
+        validation=all([([x] in SP500_list[:,:1]) for x in ticker.split("-")])
+        # all allow to check if a list o bolean is tru or false . all([true, false, true....etc])
+	    # X in SP50_list, etc.... .... will check if x is in my SP500 list. here all row and column 0
+	    # for x in is selecting each at a time
+    
+        if validation==True:
+            Results, Recommendations=predict_ticker(ticker)
+        
+        else:
+            return f"Incorrect ticket, please fix or select another."
+    else:
+        return f"JSON does not exists - Generate JSON please"
 
-    DF_accuracy,predictions,resultat=predict_ticker(ticker)
 
 
-    #return f'{prediction}\n'
-    return f"Prediction for  -- ticker: {ticker} -->{resultat.iloc[-1]['y_pred']}\n"
+    Results, Recommendations=predict_ticker(ticker)
+
+
+
+    return f"Prediction for  -- ticker: {ticker} -->\n{Recommendations} \n"
 
 
 
